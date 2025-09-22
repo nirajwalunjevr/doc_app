@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import os
-from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, Body, Response, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import credentials, initialize_app
 
 from reports.catalog.generate_full_report_fn import generate_catalog_report
@@ -14,12 +14,27 @@ from reports.catalog.generate_full_report_fn import generate_catalog_report
 # Firebase Admin initialization (service account path provided via env)
 FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
 if not FIREBASE_CREDENTIALS:
-    raise RuntimeError("FIREBASE_CREDENTIALS env var not set. Point it to your service account JSON path.")
+    raise RuntimeError(
+        "FIREBASE_CREDENTIALS env var not set. Point it to your service account JSON path."
+    )
 
 cred = credentials.Certificate(FIREBASE_CREDENTIALS)
 initialize_app(cred)
 
 app = FastAPI(title="Catalog Report Service")
+
+# CORS for Flutter Web and other clients; tighten origins later if needed
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # for development; replace with explicit origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {"ok": True}
 
 @app.post("/generate")
 def generate_endpoint(
@@ -32,9 +47,13 @@ def generate_endpoint(
     Body example: { "class_no": 10, "division": "A" }
     """
     assets_dir = Path("assets")
+    div = (division or "").strip().upper()
+    if not div:
+        raise HTTPException(status_code=400, detail="division is required")
+
     result = generate_catalog_report(
         class_no=class_no,
-        division=division,
+        division=div,
         return_bytes=True,
         assets_dir=assets_dir,
     )
@@ -43,7 +62,7 @@ def generate_endpoint(
 
     data: bytes = result["bytes"]
     disp_type = "inline" if return_inline else "attachment"
-    filename = f"catalog_{class_no}-{division.upper()}.xlsx"
+    filename = f"catalog_{class_no}-{div}.xlsx"
     headers = {"Content-Disposition": f'{disp_type}; filename="{filename}"'}
     return Response(
         content=data,
