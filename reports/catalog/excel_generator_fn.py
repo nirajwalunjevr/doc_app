@@ -45,7 +45,7 @@ def generate_catalog_excel_fn(
     medium_side = Side(border_style='medium')
 
     ws.merge_cells('B1:J1')
-    roster_headers = ['รजि. नं.', 'सवलत', 'जात', 'प्रवर्ग', 'Category',
+    roster_headers = ['रजि. नं.', 'सवलत', 'जात', 'प्रवर्ग', 'Category',
                       'जन्म दिनांक', 'अ.न.', 'विद्यार्थ्यांचे नाव', 'आईचे नाव']
     for i, text in enumerate(roster_headers):
         cidx = 2 + i  # B..J
