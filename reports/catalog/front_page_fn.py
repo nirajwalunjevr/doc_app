@@ -1,6 +1,7 @@
 # reports/catalog/front_page_fn.py
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 from openpyxl import Workbook
@@ -13,7 +14,6 @@ from PIL import Image as PILImage
 def to_marathi_numerals(number: int) -> str:
     """Converts an integer into a string with Marathi numerals."""
     english_digits = '0123456789'
-    # CORRECTED MARATHI DIGITS
     marathi_digits = '०१२३४५६७८९'
     translation_table = str.maketrans(english_digits, marathi_digits)
     return str(number).translate(translation_table)
@@ -24,7 +24,7 @@ def add_front_page_fn(
     assets_dir: Path | None = None,
 ) -> Workbook:
     """Creates and populates the 'Front Page' sheet."""
-    # Helper functions (no changes)
+    # Helper functions
     def apply_thin_grid(ws, cell_range_str: str):
         thin_side = Side(border_style="thin")
         thin_border = Border(top=thin_side, left=thin_side, right=thin_side, bottom=thin_side)
@@ -54,7 +54,7 @@ def add_front_page_fn(
 
     ws = wb.create_sheet("Front Page", 0)
 
-    # Page setup, dimensions, and static content (no changes)
+    # Page setup, dimensions, and static content
     ws.page_setup.paperSize = ws.PAPERSIZE_LEGAL
     ws.page_margins.left = 0.0
     ws.page_margins.right = 0.0
@@ -95,6 +95,7 @@ def add_front_page_fn(
         ws.row_dimensions[i].height = 19.28
     ws.row_dimensions[36].height = 25.23
     ws.row_dimensions[37].height = 19.28
+
     if assets_dir:
         logo_path = assets_dir / "School_logo.png"
         if logo_path.exists():
@@ -109,6 +110,7 @@ def add_front_page_fn(
                 ws.add_image(img, 'D2')
             except Exception:
                 pass
+
     kokila_available = assets_dir and (assets_dir / "Kokila.ttf").exists()
     font_name = "Kokila" if kokila_available else "Calibri"
     header_font_r2 = Font(name=font_name, size=16, bold=True)
@@ -116,6 +118,7 @@ def add_front_page_fn(
     header_font_r4 = Font(name=font_name, size=12, bold=True)
     header_font_r5 = Font(name=font_name, size=16, bold=True)
     center_alignment = Alignment(horizontal='center', vertical='center')
+
     ws.merge_cells('F2:N2')
     c = ws['F2']; c.value = "श्री. अगस्ति एज्युकेशन सोसायटी मुंबई संचालित..."; c.font = header_font_r2; c.alignment = center_alignment
     ws.merge_cells('F3:N3')
@@ -124,6 +127,7 @@ def add_front_page_fn(
     c = ws['F4']; c.value = "ता. अकोले, जि. अहिल्यानगर"; c.font = header_font_r4; c.alignment = center_alignment
     ws.merge_cells('F5:N5')
     c = ws['F5']; c.value = "महिनावार उपस्थिती व अभ्यासक्रम"; c.font = header_font_r5; c.alignment = center_alignment
+
     ws.merge_cells('B7:E7')
     ws.merge_cells('L7:N7')
     ws.merge_cells('B8:F8')
@@ -134,16 +138,19 @@ def add_front_page_fn(
     ws.merge_cells('G10:H10')
     ws.merge_cells('I10:J10')
     ws.merge_cells('K10:N10')
+
     header_ranges_to_border = ['B9:B11', 'C9:N9', 'C10:D10', 'E10:F10', 'G10:H10', 'I10:J10', 'K10:N10', 'C11:D11', 'E11:F11', 'G11:H11', 'I11:J11', 'K11', 'L11:N11']
     for r in header_ranges_to_border:
         apply_thin_grid(ws, r)
         apply_medium_box_border(ws, r)
+
     table_header_font = Font(name=font_name, size=14, bold=True)
     table_subheader_font = Font(name=font_name, size=14, bold=False)
     table_label_font = Font(name=font_name, size=12)
     table_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
     table_left = Alignment(horizontal='left', vertical='center')
     table_right = Alignment(horizontal='right', vertical='center')
+
     c = ws['B9']; c.value = "विद्यार्थ्यांची वर्गवारी"; c.font = table_header_font; c.alignment = table_center
     c = ws['C9']; c.value = "विद्यार्थी संख्या"; c.font = table_header_font; c.alignment = table_center
     for cell_ref, text in [('C10', "महिन्याचा पहिला दिवस"), ('E10', "प्रवेश दिलेले"), ('G10', "नाव कमी / तुकडी बदल"), ('I10', "शेवटच्या दिवशी"), ('K10', "मागासवर्गीय")]:
@@ -154,6 +161,7 @@ def add_front_page_fn(
         c = ws[f'B{i}']; c.value = text; c.font = table_label_font; c.alignment = table_left
     for i, text in enumerate(["अनु. जाती ( SC )", "अनु. जमाती (ST )", "भ. वि. जा. (NT)", "विशेष मागास (SBC)", "इतर मागास (OBC)", "खुला (OPEN)", "एकूण :-", "पटावर :-", "सरासरी हजेरी :-"], start=12):
         c = ws[f'K{i}']; c.value = text; c.font = table_label_font; c.alignment = table_left
+
     apply_thin_grid(ws, 'B12:N20')
     ws.merge_cells('L19:N19')
     ws.merge_cells('C20:D20')
@@ -163,6 +171,7 @@ def add_front_page_fn(
     ws.merge_cells('L20:N20')
     for r in ['B12:B18', 'B19', 'B20', 'C12:D18', 'C19:D19', 'C20:D20', 'E12:F18', 'E19:F19', 'E20:F20', 'G12:H18', 'G19:H19', 'G20:H20', 'I12:J18', 'I19:J19', 'I20:J20', 'K12:K18', 'K19', 'K20', 'L12:N18', 'L19:N19', 'L20:N20']:
         apply_medium_box_border(ws, r)
+
     apply_thin_grid(ws, 'B22:N31')
     ws.merge_cells('B22:N22')
     for i in range(23, 32):
@@ -171,15 +180,18 @@ def add_front_page_fn(
         ws.merge_cells(f'J{i}:N{i}')
     for r in ['B22:N22', 'B23:N23', 'B23:B31', 'C23:I31', 'J23:N31']:
         apply_medium_box_border(ws, r)
+
     curriculum_header_font = Font(name=font_name, size=14, bold=True)
     c = ws['B22']; c.value = "कमी केलेल्या व प्रवेश दिलेल्या विद्यार्थ्यांची नावे"; c.font = curriculum_header_font; c.alignment = table_center
     c = ws['B23']; c.value = "रजि. नंबर"; c.font = curriculum_header_font; c.alignment = table_center
     c = ws['C23']; c.value = "विद्यार्थ्याचे नाव"; c.font = curriculum_header_font; c.alignment = table_center
     c = ws['J23']; c.value = "शेरा"; c.font = curriculum_header_font; c.alignment = table_center
+
     ws.merge_cells('B33:N33')
     ws.merge_cells('B34:N34')
     ws.merge_cells('L35:N35')
     ws.merge_cells('L37:N37')
+
     signature_font = Font(name=font_name, size=14)
     c = ws['B33']; c.value = "मी असे प्रमाणित करतो की, वरील नोंदी बरोबर आहेत."; c.font = signature_font; c.alignment = table_left
     c = ws['B34']; c.value = "हजेरीपत्रक तपासले असून त्यातील नोंदी आमचे माहितीनुसार बरोबर आहेत"; c.font = signature_font; c.alignment = table_left
@@ -190,10 +202,12 @@ def add_front_page_fn(
     c = ws['B8']; c.value = f"वर्गशिक्षक :- {teacher_name}"; c.font = Font(name=font_name, size=14, bold=True); c.alignment = table_left
     c = ws['L37']; c.value = teacher_name; c.font = signature_font; c.alignment = table_center
 
+    # Always use current month and year (server time)
     marathi_months = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"]
-    month_num = int(report_data.get('month', 1))
-    year = int(report_data.get('year', 2025))
-    month_name = marathi_months[month_num - 1] if 1 <= month_num <= 12 else ""
+    today = datetime.today()
+    month_num = today.month
+    year = today.year
+    month_name = marathi_months[month_num - 1]
     marathi_year = to_marathi_numerals(year)
 
     info_font = Font(name=font_name, size=18, bold=True)
@@ -201,33 +215,24 @@ def add_front_page_fn(
     class_name = report_data.get('class_name_mr', '')
     c = ws['K7']; c.value = f"इयत्ता: {class_name}"; c.font = info_font; c.alignment = table_right
 
-    # --- SIMPLIFIED AND CORRECTED DIVISION LOGIC ---
-    
-    # 1. Define the translation map
+    # Simplified division logic (unchanged)
     marathi_division_map = {
         'A': 'अ', 'B': 'ब', 'C': 'क',
         'D': 'ड', 'E': 'ई', 'F': 'फ',
     }
     final_division_name = ''
 
-    # 2. Decide which data field to use. Prioritize the specific Marathi field,
-    #    then fall back to the general 'division' field.
     raw_value = report_data.get('division_name_mr', '')
     if not raw_value:
         raw_value = report_data.get('division', '')
 
-    # 3. Clean up the value we found.
     cleaned_value = str(raw_value).strip().upper()
 
-    # 4. Check if the cleaned value is an English letter (A-F) that needs translating.
     if cleaned_value in marathi_division_map:
-        # If it is, translate it to Marathi.
         final_division_name = marathi_division_map[cleaned_value]
     else:
-        # Otherwise, assume the original value was already correct (like 'क' or blank) and use it.
         final_division_name = str(raw_value).strip()
 
-    # 5. Write the final result to the cell.
     c = ws['L7']; c.value = f"तुकडी: {final_division_name}"; c.font = info_font; c.alignment = table_center
 
     return wb
