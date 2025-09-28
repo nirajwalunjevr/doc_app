@@ -11,6 +11,7 @@ from .back_page_fn import add_back_page_fn
 
 from firebase_admin import firestore  # initialized in main.py
 
+
 def generate_catalog_report(
     class_no: str | int,
     division: str,
@@ -43,10 +44,12 @@ def generate_catalog_report(
 
         report_data = {
             "teacher_name": teacher_name,
+            # month/year retained in payload for backward compatibility but not used by Front Page
             "month": month,
             "year": year,
             "class_name_mr": class_name_mr,
-            "division_name_mr": division_name_mr
+            "division_name_mr": division_name_mr,
+            "division": division.upper(),
         }
 
         students_ref = db.collection('catalog/global/students')
